@@ -11,6 +11,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.os.Build;
 
+import java.net.URI;
+import java.util.Calendar;
+import java.util.List;
+
+import fr.lassiergedeon.dontbreakthechain.model.Task;
+
 
 public class TasksActivity extends ActionBarActivity {
 
@@ -23,6 +29,18 @@ public class TasksActivity extends ActionBarActivity {
                     .add(R.id.container, new PlaceholderFragment())
                     .commit();
         }
+
+        DBOpenHelper db = new DBOpenHelper(this);
+
+        db.addTask(new Task("test1", Calendar.getInstance(), URI.create("blabla")));
+        db.addTask(new Task("test2", Calendar.getInstance(), URI.create("unautre")));
+        db.addTask(new Task("test3", Calendar.getInstance(), URI.create("opopop")));
+
+        List<Task> tasks = db.getAllTasks();
+
+        db.deleteTask(tasks.get(0));
+
+        db.getAllTasks();
     }
 
 
