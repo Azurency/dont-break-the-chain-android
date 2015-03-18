@@ -2,11 +2,11 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 22
-    buildToolsVersion "21.1.2"
+    buildToolsVersion "22.0.0"
 
     defaultConfig {
-        applicationId "fr.gedeon.sebastien.lassier.antoine.dontbreakthechain"
-        minSdkVersion 15
+        applicationId "fr.lassiergedeon.dontbreakthechain"
+        minSdkVersion 17
         targetSdkVersion 22
         versionCode 1
         versionName "1.0"

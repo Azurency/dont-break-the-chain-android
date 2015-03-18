@@ -1,4 +1,4 @@
-package fr.gedeon.sebastien.lassier.antoine.dontbreakthechain;
+package fr.lassiergedeon.dontbreakthechain;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;
