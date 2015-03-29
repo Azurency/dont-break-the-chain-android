@@ -9,6 +9,19 @@ public class Chain {
     private String firstDate;
     private String lastDate;
 
+    public Chain(int idTask, String firstDate, String lastDate) {
+        this.idTask = idTask;
+        this.firstDate = firstDate;
+        this.lastDate = lastDate;
+    }
+
+    public Chain(int id, int idTask, String firstDate, String lastDate) {
+        this.id = id;
+        this.idTask = idTask;
+        this.firstDate = firstDate;
+        this.lastDate = lastDate;
+    }
+
     public Chain(int id, int idTask, String firstDate) {
         this.id = id;
         this.idTask = idTask;

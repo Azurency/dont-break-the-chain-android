@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import fr.lassiergedeon.dontbreakthechain.model.Chain;
 import fr.lassiergedeon.dontbreakthechain.model.Task;
 
 /**
@@ -25,11 +26,9 @@ public class DBOpenHelper extends SQLiteOpenHelper {
     private static final String DB_TASKS_TABLE_NAME = "tasks";
     private static final String DB_CHAIN_TABLE_NAME = "chain";
 
-    //private SQLiteDatabase db;
 
     DBOpenHelper(Context context) {
         super(context, DB_NAME, null, DATABASE_VERSION);
-        //db = getWritableDatabase();
     }
 
     @Override
@@ -56,6 +55,12 @@ public class DBOpenHelper extends SQLiteOpenHelper {
 
         this.onCreate(db);
     }
+
+
+    /*
+     * METHODES TASKS
+     */
+
 
     public void addTask(Task task) {
         Log.d("addTask", task.toString());
@@ -159,4 +164,94 @@ public class DBOpenHelper extends SQLiteOpenHelper {
         db.close();
         Log.d("deleteTask", task.toString());
     }
+
+
+    /*
+     * METHODES CHAIN
+     */
+
+    public void addChain(Chain chain) {
+        Log.d("addChain", chain.toString());
+
+        SQLiteDatabase db = getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put("idT", chain.getIdTask());
+        values.put("firstDate", chain.getFirstDate());
+        values.put("lastDate", chain.getLastDate());
+
+        db.insert(DB_CHAIN_TABLE_NAME, null, values);
+        db.close();
+    }
+
+    public Chain getChain(int id) {
+        SQLiteDatabase db = getReadableDatabase();
+        String[] columns = {"idC", "idT", "firstDate", "lastDate"};
+
+        Cursor cursor = db.query(DB_CHAIN_TABLE_NAME,
+                columns,
+                " idC = ?",
+                new String[] { String.valueOf(id) },
+                null, null, null, null);
+
+        if (cursor != null) {
+            cursor.moveToFirst();
+        }
+
+        Chain chain = new Chain(cursor.getInt(0), cursor.getInt(1), cursor.getString(2), cursor.getString(3));
+        cursor.close();
+
+        Log.d("getChain("+id+")", chain.toString());
+        return chain;
+    }
+
+    public List<Chain> getAllChains() {
+        List<Chain> chains = new ArrayList<Chain>();
+
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + DB_CHAIN_TABLE_NAME, null);
+
+        Chain chain = null;
+        if (cursor.moveToFirst()) {
+            do {
+                chain = new Chain(cursor.getInt(0), cursor.getInt(1), cursor.getString(2), cursor.getString(3));
+                chains.add(chain);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        Log.d("getAllChains()", chains.toString());
+
+        return chains;
+    }
+
+    public int updateChain(Chain chain) {
+        SQLiteDatabase db = getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put("idT", chain.getIdTask());
+        values.put("firstDate", chain.getFirstDate());
+        values.put("lastDate", chain.getLastDate());
+
+        int i = db.update(DB_CHAIN_TABLE_NAME,
+                values,
+                " idC = ? ",
+                new String[] { String.valueOf(chain.getId()) });
+
+        db.close();
+        Log.d("updateChain", chain.toString());
+        return i;
+    }
+
+    public void deleteChain(Chain chain) {
+        SQLiteDatabase db = getWritableDatabase();
+
+        db.delete(DB_CHAIN_TABLE_NAME,
+                " idC = ? ",
+                new String[] { String.valueOf(chain.getId()) });
+
+        db.close();
+        Log.d("deleteChain", chain.toString());
+    }
+
 }
