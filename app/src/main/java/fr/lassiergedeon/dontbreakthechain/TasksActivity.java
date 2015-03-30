@@ -11,6 +11,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.os.Build;
+import android.widget.Toast;
 
 import com.gc.materialdesign.views.ButtonFloat;
 
@@ -22,9 +23,9 @@ import fr.lassiergedeon.dontbreakthechain.model.Chain;
 import fr.lassiergedeon.dontbreakthechain.model.Task;
 
 
+
 public class TasksActivity extends ActionBarActivity {
 
-    ButtonFloat addButton;
     DBOpenHelper db;
 
     @Override
@@ -32,18 +33,11 @@ public class TasksActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tasks);
         if (savedInstanceState == null) {
+            Fragment f = new TaskViewerFragment();
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new PlaceholderFragment())
+                    .add(R.id.container, f)
                     .commit();
         }
-
-        addButton = (ButtonFloat) findViewById(R.id.addButtonFloat);
-        addButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.d("debug", "unmessage");
-            }
-        });
 
 
         db = new DBOpenHelper(this);
@@ -93,19 +87,7 @@ public class TasksActivity extends ActionBarActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class PlaceholderFragment extends Fragment {
-
-        public PlaceholderFragment() {
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_tasks, container, false);
-            return rootView;
-        }
+    public void test(View v){
+        Log.d("de","eraerazr");
     }
 }
