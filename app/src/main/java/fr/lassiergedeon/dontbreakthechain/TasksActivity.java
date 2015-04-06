@@ -16,7 +16,11 @@ import android.widget.Toast;
 import com.gc.materialdesign.views.ButtonFloat;
 
 import java.net.URI;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import fr.lassiergedeon.dontbreakthechain.model.Chain;
@@ -42,26 +46,6 @@ public class TasksActivity extends ActionBarActivity {
 
         db = new DBOpenHelper(this);
 
-        db.addTask(new Task("test1", Calendar.getInstance(), URI.create("blabla")));
-        db.addTask(new Task("test2", Calendar.getInstance(), URI.create("unautre")));
-        db.addTask(new Task("test3", Calendar.getInstance(), URI.create("opopop")));
-
-        List<Task> tasks = db.getAllTasks();
-
-        db.deleteTask(tasks.get(0));
-
-        db.getAllTasks();
-
-        db.addChain(new Chain(1, "20/10/2014", "05/12/2014"));
-        db.addChain(new Chain(2, "03/08/2014", "12/11/2014"));
-        db.addChain(new Chain(2, "01/01/2015", "12/02/2015"));
-        db.addChain(new Chain(1, "15/12/2014", "23/03/2015"));
-
-        List<Chain> chains = db.getAllChains();
-
-        db.deleteChain(chains.get(0));
-
-        db.getAllChains();
     }
 
 

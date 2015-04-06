@@ -134,6 +134,33 @@ public class DBOpenHelper extends SQLiteOpenHelper {
         return tasks;
     }
 
+    public Chain getLongestChain(int idT){
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + DB_CHAIN_TABLE_NAME + " where idT = ?", new String[]{""+idT});
+        int idCLongest = -1;
+        long longestChain = 0;
+        if (cursor.moveToFirst()) {
+            SimpleDateFormat sdf = new SimpleDateFormat("d/M/y");
+            do {
+                Calendar calendarD = Calendar.getInstance();
+                Calendar calendarF = Calendar.getInstance();
+                try {
+                    calendarD.setTime(sdf.parse(cursor.getString(2)));
+                    calendarF.setTime(sdf.parse(cursor.getString(3)));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                //Log.d("getLongestChain()", calendarF.getTimeInMillis() - calendarD.getTimeInMillis()+"" );
+                if( longestChain < calendarF.getTimeInMillis() - calendarD.getTimeInMillis() ){
+                    longestChain = calendarF.getTimeInMillis() - calendarD.getTimeInMillis();
+                    idCLongest = cursor.getInt(0);
+                }
+            } while (cursor.moveToNext());
+        }
+        Log.d("getLongestChain()", idCLongest+"" );
+        return getChain(idCLongest);
+    }
+
     public int updateTask(Task task) {
         SQLiteDatabase db = getWritableDatabase();
 
