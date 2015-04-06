@@ -62,7 +62,7 @@ public class DBOpenHelper extends SQLiteOpenHelper {
      */
 
 
-    public void addTask(Task task) {
+    public int addTask(Task task) {
         Log.d("addTask", task.toString());
 
         SQLiteDatabase db = getWritableDatabase();
@@ -74,8 +74,9 @@ public class DBOpenHelper extends SQLiteOpenHelper {
         values.put("notificationHour", hour);
         values.put("ringToneURI", task.getRingToneURI().toString());
 
-        db.insert(DB_TASKS_TABLE_NAME, null, values);
+        int id = (int) db.insert(DB_TASKS_TABLE_NAME, null, values);
         db.close();
+        return id;
     }
 
     public Task getTask(int id) {

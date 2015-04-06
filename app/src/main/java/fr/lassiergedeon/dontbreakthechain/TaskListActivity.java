@@ -1,19 +1,10 @@
 package fr.lassiergedeon.dontbreakthechain;
 
 import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.os.Build;
-import android.widget.Toast;
-
-import com.gc.materialdesign.views.ButtonFloat;
 
 import java.net.URI;
 import java.util.Calendar;
@@ -24,7 +15,7 @@ import fr.lassiergedeon.dontbreakthechain.model.Task;
 
 
 
-public class TasksActivity extends ActionBarActivity {
+public class TaskListActivity extends ActionBarActivity {
 
     DBOpenHelper db;
 
@@ -32,15 +23,19 @@ public class TasksActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tasks);
-        if (savedInstanceState == null) {
-            Fragment f = new TaskViewerFragment();
+        /*if (savedInstanceState == null) {
+            Fragment f = new TaskListFragment();
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, f)
                     .commit();
-        }
+        }*/
 
 
         db = new DBOpenHelper(this);
+
+        /*for (Task t : db.getAllTasks()) {
+            db.deleteTask(t);
+        }
 
         db.addTask(new Task("test1", Calendar.getInstance(), URI.create("blabla")));
         db.addTask(new Task("test2", Calendar.getInstance(), URI.create("unautre")));
@@ -61,7 +56,7 @@ public class TasksActivity extends ActionBarActivity {
 
         db.deleteChain(chains.get(0));
 
-        db.getAllChains();
+        db.getAllChains();*/
     }
 
 
@@ -85,9 +80,5 @@ public class TasksActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    public void test(View v){
-        Log.d("de","eraerazr");
     }
 }

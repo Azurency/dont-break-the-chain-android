@@ -1,33 +1,45 @@
 package fr.lassiergedeon.dontbreakthechain;
 
-import android.support.v4.app.Fragment;
+import android.animation.Animator;
+import android.animation.AnimatorInflater;
+import android.app.Fragment;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
-import com.gc.materialdesign.views.ButtonFloat;
+import java.util.List;
+
+import fr.lassiergedeon.dontbreakthechain.model.Task;
 
 /**
- * Created by sebastien on 30/03/2015.
+ * Created by Antoine on 06/04/2015.
  */
-public class TaskViewerFragment extends Fragment{
+public class TaskViewerFragment extends Fragment {
 
-
-    ButtonFloat addButton;
-
-    public TaskViewerFragment(){
-        super();
-    }
+    private Task currentTask;
+    private DBOpenHelper db;
 
     @Override
-    public View onCreateView(LayoutInflater inflater,
-                             ViewGroup container,
-                             Bundle savedInstanceState){
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.detail_task, container, false);
 
-        addButton = (ButtonFloat) container.findViewById(R.id.addButtonFloat);
-        //addButton.setOnClickListener(new AddTaskButtonListener());
+        // on récupère l'id de la tâche passé avec le putExtra
+        Intent launchingIntent = getActivity().getIntent();
+        int task_id = launchingIntent.getIntExtra("task_id", 0);
+        ((TextView) view.findViewById(R.id.textView2)).setText("" + task_id);
 
-        return inflater.inflate(R.layout.fragment_tasks, container, false);
+        // on récupère la tâche associé à l'id
+        db = new DBOpenHelper(getActivity());
+        List<Task> t = db.getAllTasks();
+        currentTask = db.getTask(task_id);
+
+        ((ActionBarActivity) getActivity()).getSupportActionBar().setTitle(currentTask.getTitle());
+
+        return view;
     }
 }
