@@ -1,5 +1,9 @@
 package fr.lassiergedeon.dontbreakthechain.model;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /**
  * Created by Antoine on 18/03/2015.
  */
@@ -27,6 +31,19 @@ public class Chain {
         this.idTask = idTask;
         this.firstDate = firstDate;
         this.lastDate = "";
+    }
+
+    public int getNbJours(){
+        SimpleDateFormat sdf = new SimpleDateFormat("d/M/y");
+        int nbJour = 0;
+        try {
+            Date dd = sdf.parse(firstDate);
+            Date df = sdf.parse(lastDate);
+            nbJour = (int)( (df.getTime() - dd.getTime()) / (1000 * 60 * 60 * 24));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return nbJour;
     }
 
     public int getId() {
