@@ -16,14 +16,21 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".TaskViewerActivity"
-                  android:label="Chain detail" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+        <activity
+            android:name=".TaskViewerActivity"
+            android:label="Task detail"
+            android:parentActivityName=".TaskListActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="fr.lassiergedeon.dontbreakthechain.TaskListActivity" />
         </activity>
+        <activity
+            android:name=".TaskSettingActivity"
+            android:label="Task setting">
+        </activity>
+
+        <uses-permission android:name="com.android.alarm.permission.SET_ALARM"/>
+        <receiver android:name="fr.lassiergedeon.dontbreakthechain.AlarmManagerHelper"/>
     </application>
 
 </manifest>

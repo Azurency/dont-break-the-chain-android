@@ -5,9 +5,9 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.net.Uri;
 import android.util.Log;
 
-import java.net.URI;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -27,7 +27,7 @@ public class DBOpenHelper extends SQLiteOpenHelper {
     private static final String DB_CHAIN_TABLE_NAME = "chain";
 
 
-    DBOpenHelper(Context context) {
+    public DBOpenHelper(Context context) {
         super(context, DB_NAME, null, DATABASE_VERSION);
     }
 
@@ -100,10 +100,10 @@ public class DBOpenHelper extends SQLiteOpenHelper {
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        Task task = new Task(cursor.getInt(0), cursor.getString(1), calendar, URI.create(cursor.getString(3)));
+        Task task = new Task(cursor.getInt(0), cursor.getString(1), calendar, Uri.parse(cursor.getString(3)));
         cursor.close();
 
-        Log.d("getTask("+id+")", task.toString());
+        Log.d("getTask(" + id + ")", task.toString());
 
         return task;
     }
@@ -124,7 +124,7 @@ public class DBOpenHelper extends SQLiteOpenHelper {
                 } catch (ParseException e) {
                     e.printStackTrace();
                 }
-                task = new Task(cursor.getInt(0), cursor.getString(1), calendar, URI.create(cursor.getString(3)));
+                task = new Task(cursor.getInt(0), cursor.getString(1), calendar, Uri.parse(cursor.getString(3)));
 
                 tasks.add(task);
             } while (cursor.moveToNext());
@@ -133,33 +133,6 @@ public class DBOpenHelper extends SQLiteOpenHelper {
         Log.d("getAllTasks()", tasks.toString());
 
         return tasks;
-    }
-
-    public Chain getLongestChain(int idT){
-        SQLiteDatabase db = getWritableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + DB_CHAIN_TABLE_NAME + " where idT = ?", new String[]{""+idT});
-        int idCLongest = -1;
-        long longestChain = 0;
-        if (cursor.moveToFirst()) {
-            SimpleDateFormat sdf = new SimpleDateFormat("d/M/y");
-            do {
-                Calendar calendarD = Calendar.getInstance();
-                Calendar calendarF = Calendar.getInstance();
-                try {
-                    calendarD.setTime(sdf.parse(cursor.getString(2)));
-                    calendarF.setTime(sdf.parse(cursor.getString(3)));
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-                //Log.d("getLongestChain()", calendarF.getTimeInMillis() - calendarD.getTimeInMillis()+"" );
-                if( longestChain < calendarF.getTimeInMillis() - calendarD.getTimeInMillis() ){
-                    longestChain = calendarF.getTimeInMillis() - calendarD.getTimeInMillis();
-                    idCLongest = cursor.getInt(0);
-                }
-            } while (cursor.moveToNext());
-        }
-        Log.d("getLongestChain()", idCLongest+"" );
-        return getChain(idCLongest);
     }
 
     public int updateTask(Task task) {
@@ -234,7 +207,7 @@ public class DBOpenHelper extends SQLiteOpenHelper {
     }
 
     public List<Chain> getAllChains() {
-        List<Chain> chains = new ArrayList<Chain>();
+        List<Chain> chains = new ArrayList<>();
 
         SQLiteDatabase db = getWritableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM " + DB_CHAIN_TABLE_NAME, null);
@@ -251,6 +224,55 @@ public class DBOpenHelper extends SQLiteOpenHelper {
         Log.d("getAllChains()", chains.toString());
 
         return chains;
+    }
+
+    public List<Chain> getAllChainsForTaskId(int idT) {
+        List<Chain> chains = new ArrayList<>();
+
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + DB_CHAIN_TABLE_NAME + " WHERE idT=" + idT, null);
+
+        Chain chain = null;
+        if (cursor.moveToFirst()) {
+            do {
+                chain = new Chain(cursor.getInt(0), cursor.getInt(1), cursor.getString(2), cursor.getString(3));
+                chains.add(chain);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        Log.d("getAllChainsForTaskId()", chains.toString());
+
+        return chains;
+    }
+
+    public Chain getLongestChain(int idT){
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor cursor = db.rawQuery("SELECT * FROM " + DB_CHAIN_TABLE_NAME + " where idT = ?", new String[]{""+idT});
+        int idCLongest = -1;
+        long longestChain = 0;
+        if (cursor.moveToFirst()) {
+            SimpleDateFormat sdf = Chain.DATE_FORMATTER;
+            do {
+                Calendar calendarD = Calendar.getInstance();
+                Calendar calendarF = Calendar.getInstance();
+                try {
+                    calendarD.setTime(sdf.parse(cursor.getString(2)));
+                    calendarF.setTime(sdf.parse(cursor.getString(3)));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                //Log.d("getLongestChain()", calendarF.getTimeInMillis() - calendarD.getTimeInMillis()+"" );
+                if( longestChain < calendarF.getTimeInMillis() - calendarD.getTimeInMillis() ){
+                    longestChain = calendarF.getTimeInMillis() - calendarD.getTimeInMillis();
+                    idCLongest = cursor.getInt(0);
+                }
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        Log.d("getLongestChain()", idCLongest+"" );
+        return getChain(idCLongest);
     }
 
     public int updateChain(Chain chain) {

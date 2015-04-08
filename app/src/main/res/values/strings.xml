@@ -2,8 +2,31 @@
     <string name="app_name">Don\'t break the chain</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="action_disableNotifications">Désactiver les notifications</string>
+    <string name="action_enableNotifications">Activer les notifications</string>
+    <string name="action_colapse">Revenir</string>
     <string name="myTasks">Mes tâches</string>
     <string name="taskName">Nom de la tâche</string>
     <string name="taskAdd">Ajouter</string>
-    <string name="taskCancel">Annuler</string>
+    <string name="deleteTask">Supprimer la tâche</string>
+    <string name="deleteTaskMessage">Êtes vous sur de vouloir supprimer la tâche %1$s ?</string>
+    <string name="ok">Ok</string>
+    <string name="cancel">Annuler</string>
+    <string name="currentChain">chaine actuelle</string>
+    <string name="longuestChain">meilleure chaine</string>
+    <string name="days">jours</string>
+    <string name="manageNotification">Gérer les notifications</string>
+    <string name="taskSettingsInformation">Vous pouvez programmer une notification pour votre tâche <b>%1$s</b>,
+        la notification se répètera chaque jour et vous permettera de ne jamais oublier de réaliser votre tâche.</string>
+    <string name="taskSettingsNotificationTitle"><b>Notifications</b></string>
+    <string name="taskSettingsNotificationSubtitle">Activer les notifications pour cette tâche</string>
+    <string name="taskSettingsHourTitle"><b>Heure de notification</b></string>
+    <string name="taskSettingsHourSubtitle">Sélectionner l\'heure de notification journalière</string>
+    <string name="taskSettingsRingtoneTitle"><b>Mélodie</b></string>
+    <string name="taskSettingsRingtoneSubtitle">Sélectionner une mélodie différente pour la notification</string>
+    <string name="tastSettingsChangeRingtoneButton">Choisir</string>
+    <string name="tastSettingsChangeNotificationHour">Changer</string>
+    <string name="selectTone">Sélectionner une mélodie</string>
+    <string name="notificationText">N\'oubliez pas, don\'t break the chain !</string>
+    <string name="hourSelect">Sélectionner l\'heure</string>
 </resources>

@@ -1,17 +1,23 @@
 package fr.lassiergedeon.dontbreakthechain;
 
+import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.gc.materialdesign.views.ButtonFloat;
@@ -41,6 +47,7 @@ public class TaskListFragment extends Fragment {
                              ViewGroup container,
                              Bundle savedInstanceState){
         View view = inflater.inflate(R.layout.list_tasks, container, false);
+        setHasOptionsMenu(true);
 
         db = new DBOpenHelper(getActivity());
 
@@ -71,7 +78,8 @@ public class TaskListFragment extends Fragment {
                 Log.d("onSwipe()", "swipe");
                 for (int i = 0; i < positionList.length; i++) {
                     int direction = directionList[i];
-                    int position = positionList[i];
+                    final int position = positionList[i];
+                    final Task task = (Task) tasksAdapter.getItem(position);
                     String dir = "";
 
                     switch (direction) {
@@ -82,16 +90,38 @@ public class TaskListFragment extends Fragment {
                             dir = "far right";
                             break;
                         case SwipeDirections.DIRECTION_NORMAL_LEFT:
+                            // On supprime la tâche
+                            adapter.remove(task);
+                            AlertDialog.Builder deleteBuilder = new AlertDialog.Builder(getActivity());
+                            deleteBuilder.setTitle(R.string.deleteTask)
+                                    .setMessage(getActivity().getString(R.string.deleteTaskMessage, task.getTitle()));
+                            deleteBuilder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    SharedPreferences settings = getActivity().getSharedPreferences("fr.lassiergedeon.dontbreakthechain.TASK_" + task.getId(), getActivity().MODE_PRIVATE);
+                                    settings.edit().clear().commit();
+                                    db.deleteTask(task);
+                                }
+                            });
+                            deleteBuilder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    adapter.insert(task, position);
+                                    dialog.cancel();
+                                }
+                            });
+                            deleteBuilder.create().show();
                             dir = "left";
                             break;
                         case SwipeDirections.DIRECTION_NORMAL_RIGHT:
+                            task.markDayComplete(db);
                             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                             builder.setTitle("Test Dialog").setMessage("You swiped right").create().show();
                             dir = "right";
                             break;
                     }
                     Toast.makeText(getActivity(),
-                            dir + " swipe position " + tasksAdapter.getItem(position),
+                            dir + " swipe position " + task,
                             Toast.LENGTH_SHORT).show();
                     tasksAdapter.notifyDataSetChanged();
                 }
@@ -113,7 +143,7 @@ public class TaskListFragment extends Fragment {
                     public void onClick(DialogInterface dialog, int which) {
                         String taskName = input.getText().toString();
                         if (!taskName.equals("")) {
-                            Task t = new Task(input.getText().toString().trim(), Calendar.getInstance(), URI.create("unknow"));
+                            Task t = new Task(input.getText().toString().trim());
                             int id = db.addTask(t);
                             adapter.add(db.getTask(id));
                             tasksAdapter.notifyDataSetChanged();
@@ -122,7 +152,7 @@ public class TaskListFragment extends Fragment {
                         }
                     }
                 });
-                builder.setNegativeButton(R.string.taskCancel, new DialogInterface.OnClickListener() {
+                builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.cancel();
@@ -144,5 +174,51 @@ public class TaskListFragment extends Fragment {
         });
 
         return view;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_disableNotifications:
+                for (Task t : db.getAllTasks()) {
+                    int taskId = t.getId();
+                    Intent intentLocal = new Intent(getActivity().getApplicationContext(), AlarmManagerHelper.class);
+                    PendingIntent pendingIntentLocal = PendingIntent.getBroadcast(getActivity().getApplicationContext(), taskId, intentLocal, 0);
+                    AlarmManager alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
+                    alarmManager.cancel(pendingIntentLocal);
+                    pendingIntentLocal.cancel();
+                    SharedPreferences settings = getActivity().getSharedPreferences("fr.lassiergedeon.dontbreakthechain.TASK_" + taskId, getActivity().MODE_PRIVATE);
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.putBoolean("notification_enabled", false);
+                    editor.commit();
+                    Log.i("disablenotification", taskId + "");
+                }
+                return true;
+            case R.id.action_enableNotifications:
+                for (Task t : db.getAllTasks()) {
+                    Log.i("enable", "bl bla");
+                    int taskId = t.getId();
+                    SharedPreferences settings = getActivity().getSharedPreferences("fr.lassiergedeon.dontbreakthechain.TASK_" + taskId, getActivity().MODE_PRIVATE);
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.putBoolean("notification_enabled", true);
+                    editor.commit();
+                    AlarmManager alarmManager = (AlarmManager) getActivity().getSystemService(Context.ALARM_SERVICE);
+                    Intent intent = new Intent(getActivity(), AlarmManagerHelper.class);
+                    intent.putExtra("ringtone", t.getRingToneURI().toString());
+                    intent.putExtra("task_title", t.getTitle());
+                    PendingIntent alarmIntent = PendingIntent.getBroadcast(getActivity(), taskId, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+                    Calendar taskCalendar = t.getNotificationHour();
+                    Calendar c = Calendar.getInstance();
+                    c.set(Calendar.HOUR_OF_DAY, taskCalendar.get(Calendar.HOUR_OF_DAY));
+                    c.set(Calendar.MINUTE, taskCalendar.get(Calendar.MINUTE));
+                    if (c.before(Calendar.getInstance())) {
+                        c.add(Calendar.DATE, 1);
+                    }
+                    alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, c.getTimeInMillis(), 24 * 60 * 60 * 1000, alarmIntent);
+                }
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 }

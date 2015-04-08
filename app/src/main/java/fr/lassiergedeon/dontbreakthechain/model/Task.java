@@ -2,15 +2,15 @@ package fr.lassiergedeon.dontbreakthechain.model;
 
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.provider.Settings;
 import android.util.Log;
+import android.net.Uri;
 
-import java.net.URI;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
 import fr.lassiergedeon.dontbreakthechain.DBOpenHelper;
 
@@ -18,21 +18,33 @@ import fr.lassiergedeon.dontbreakthechain.DBOpenHelper;
  * Created by Antoine on 18/03/2015.
  */
 public class Task {
+
+    public static final SimpleDateFormat TASK_NOTIFICATION_DATE_FORMAT = new SimpleDateFormat("HH:mm");
     private int id;
     private String title;
     private Calendar notificationHour;
-    private URI ringToneURI;
+    private Uri ringToneURI;
 
     public Task() {}
 
-    public Task(String title, Calendar notificationHour, URI ringToneURI) {
+    public Task(String title) {
+        super();
+        this.title = title;
+        Calendar c = Calendar.getInstance();
+        c.set(Calendar.HOUR_OF_DAY, 12);
+        c.set(Calendar.MINUTE, 0);
+        this.notificationHour = c;
+        ringToneURI = Settings.System.DEFAULT_NOTIFICATION_URI;
+    }
+
+    public Task(String title, Calendar notificationHour, Uri ringToneURI) {
         super();
         this.title = title;
         this.notificationHour = notificationHour;
         this.ringToneURI = ringToneURI;
     }
 
-    public Task(int id, String title, Calendar notificationHour, URI ringToneURI) {
+    public Task(int id, String title, Calendar notificationHour, Uri ringToneURI) {
         super();
         this.id = id;
         this.title = title;
@@ -41,23 +53,29 @@ public class Task {
     }
 
     public void markDayComplete(DBOpenHelper dbo){
-        Chain c = this.getCurrentChain(dbo);
-        SimpleDateFormat sdf = new SimpleDateFormat("d/M/y");
+        Chain c = this.getLastChain(dbo);
+        Date dateActuel = new Date();
+        String s = Chain.DATE_FORMATTER.format(dateActuel);
+        if (hasCurrentChain(dbo)) {
+            c.setLastDate(s);
+            dbo.updateChain(c);
+        } else {
+            dbo.addChain(new Chain(this.id, s, s));
+        }
+    }
+
+    public boolean hasCurrentChain(DBOpenHelper db) {
+        Chain lastChain = getLastChain(db);
+        if (lastChain == null)
+            return false;
+        Date dateActuelle = new Date();
         Date derniereDate = null;
         try {
-            derniereDate = sdf.parse(c.getLastDate());
+            derniereDate = Chain.DATE_FORMATTER.parse(lastChain.getLastDate());
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        Date dateActuel = new Date();
-        String s = dateActuel.getDate()+"/"+( 1 + dateActuel.getMonth())+"/"+(1900 + dateActuel.getYear());
-        if( (int)( (dateActuel.getTime() - derniereDate.getTime()) / (1000 * 60 * 60 * 24)) > 1 ) {
-            dbo.addChain(new Chain(this.id, s, s));
-        }else{
-            c.setLastDate(s);
-            dbo.updateChain(c);
-        }
-
+        return ((int) ((dateActuelle.getTime() - derniereDate.getTime()) / (1000 * 60 * 60 * 24)) <= 1);
     }
 
     public ArrayList<Chain> getChains(DBOpenHelper dbo){
@@ -80,7 +98,7 @@ public class Task {
         return chains;
     }
 
-    public Chain getCurrentChain(DBOpenHelper dbo){
+    public Chain getLastChain(DBOpenHelper dbo){
         SQLiteDatabase db = dbo.getWritableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM chain where idT = "+ this.id
                 +" and idC = (select MAX(idC) from chain where idT = "+this.id+" ) ", null);
@@ -96,16 +114,26 @@ public class Task {
      * @return le nombre de jours de la chaine actuelle
      */
     public int getCurrentConsecutiveDays(DBOpenHelper dbo){
+        if (!hasCurrentChain(dbo))
+            return 0;
         SQLiteDatabase db = dbo.getWritableDatabase();
         Cursor cursor = db.rawQuery("SELECT * FROM chain where idT = "+ this.id
                 +" and idC = (select MAX(idC) from chain where idT = "+this.id+" ) ", null);
         int nbJours = 0;
         if (cursor.moveToFirst()) {
-            SimpleDateFormat sdf = new SimpleDateFormat("d/M/y");
+            SimpleDateFormat sdf = Chain.DATE_FORMATTER;
             try {
                 Date dd = sdf.parse(cursor.getString(2));
                 Date df = sdf.parse(cursor.getString(3));
-                nbJours = (int)( (df.getTime() - dd.getTime()) / (1000 * 60 * 60 * 24));
+                Calendar cal1 = Calendar.getInstance();
+                cal1.setTime(dd);
+                Calendar cal2 = Calendar.getInstance();
+                cal2.setTime(df);
+
+                while (!cal1.after(cal2)) {
+                    nbJours++;
+                    cal1.add(Calendar.DATE, 1);
+                }
             } catch (ParseException e) {
                 e.printStackTrace();
             }
@@ -124,7 +152,7 @@ public class Task {
         int idCLongest = -1;
         long longestChain = 0;
         if (cursor.moveToFirst()) {
-            SimpleDateFormat sdf = new SimpleDateFormat("d/M/y");
+            SimpleDateFormat sdf = Chain.DATE_FORMATTER;
             do {
                 Calendar calendarD = Calendar.getInstance();
                 Calendar calendarF = Calendar.getInstance();
@@ -135,13 +163,15 @@ public class Task {
                     e.printStackTrace();
                 }
                 //Log.d("getLongestChain()", calendarF.getTimeInMillis() - calendarD.getTimeInMillis()+"" );
-                if( longestChain < calendarF.getTimeInMillis() - calendarD.getTimeInMillis() ){
+                if( longestChain <= calendarF.getTimeInMillis() - calendarD.getTimeInMillis() ){
                     longestChain = calendarF.getTimeInMillis() - calendarD.getTimeInMillis();
                     idCLongest = cursor.getInt(0);
                 }
             } while (cursor.moveToNext());
         }
         Log.d("getLongestChain()", idCLongest+"" );
+        if (idCLongest == -1)
+            return null;
         return dbo.getChain(idCLongest);
     }
 
@@ -169,11 +199,16 @@ public class Task {
         this.notificationHour = notificationHour;
     }
 
-    public URI getRingToneURI() {
+    public String getNotificationHourAsString() {
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+        return sdf.format(notificationHour.getTime());
+    }
+
+    public Uri getRingToneURI() {
         return ringToneURI;
     }
 
-    public void setRingToneURI(URI ringToneURI) {
+    public void setRingToneURI(Uri ringToneURI) {
         this.ringToneURI = ringToneURI;
     }
 

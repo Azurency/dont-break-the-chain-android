@@ -9,6 +9,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
+import fr.lassiergedeon.dontbreakthechain.DBOpenHelper;
 import fr.lassiergedeon.dontbreakthechain.R;
 import fr.lassiergedeon.dontbreakthechain.model.Task;
 
@@ -32,8 +33,10 @@ public class TasksAdapter extends ArrayAdapter<Task> {
         TextView taskName = (TextView) convertView.findViewById(R.id.taskName);
         TextView consecutiveDays = (TextView) convertView.findViewById(R.id.consecutiveDays);
 
+        DBOpenHelper db = new DBOpenHelper(convertView.getContext());
+
         taskName.setText(task.getTitle());
-        consecutiveDays.setText("15");
+        consecutiveDays.setText(task.getCurrentConsecutiveDays(db) + "");
 
         return convertView;
     }
