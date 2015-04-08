@@ -67,7 +67,10 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:id="@+id/notificationHour"
-        android:layout_gravity="center_horizontal"/>
+        android:layout_gravity="center_horizontal"
+        android:textSize="48sp"
+        android:paddingTop="10dp"
+        android:paddingBottom="10dp"/>
 
     <LinearLayout
         android:orientation="horizontal"

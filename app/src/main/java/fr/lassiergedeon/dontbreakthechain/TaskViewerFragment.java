@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,6 +19,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.roomorama.caldroid.CaldroidFragment;
+import com.roomorama.caldroid.CaldroidListener;
 
 import java.text.ParseException;
 import java.util.Calendar;
@@ -42,6 +44,7 @@ public class TaskViewerFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.detail_task, container, false);
         setHasOptionsMenu(true);
+        //((ActionBarActivity) getActivity()).setSupportActionBar((Toolbar) view.findViewById(R.id.toolbar));
 
         // on récupère l'id de la tâche passé avec le putExtra
         Intent launchingIntent = getActivity().getIntent();
@@ -70,7 +73,6 @@ public class TaskViewerFragment extends Fragment {
             args.putInt(CaldroidFragment.START_DAY_OF_WEEK, CaldroidFragment.MONDAY);
             calendarFragment.setArguments(args);
         }
-
         // Met en place le calendrier
         setRessourcesForChains();
 
@@ -78,6 +80,21 @@ public class TaskViewerFragment extends Fragment {
         FragmentTransaction transaction = ((ActionBarActivity) getActivity()).getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.taskCalendar, calendarFragment);
         transaction.commit();
+
+        calendarFragment.setCaldroidListener(new CaldroidListener() {
+            @Override
+            public void onSelectDate(Date date, View view) {
+
+            }
+
+            @Override
+            public void onCaldroidViewCreated() {
+                calendarFragment.getLeftArrowButton().setBackgroundResource(R.drawable.ic_action_previous_item);
+                calendarFragment.getRightArrowButton().setBackgroundResource(R.drawable.ic_action_next_item);
+                //calendarFragment.getLeftArrowButton().setTextColor(getResources().getColor(R.color.blue));
+                super.onCaldroidViewCreated();
+            }
+        });
 
         // Mise en place des statistiques
         TextView currentChainLengthTextView = (TextView) view.findViewById(R.id.actualChainLengthTextView);
@@ -128,7 +145,8 @@ public class TaskViewerFragment extends Fragment {
         for (Chain chain : chains) {
             List<Date> dates = chain.getDateList();
             for (Date date : dates) {
-                calendarFragment.setBackgroundResourceForDate(R.color.blue, date);
+                calendarFragment.setBackgroundResourceForDate(R.color.accent, date);
+                calendarFragment.setTextColorForDate(R.color.white, date);
             }
         }
     }

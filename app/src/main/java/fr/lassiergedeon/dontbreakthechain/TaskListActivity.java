@@ -1,5 +1,6 @@
 package fr.lassiergedeon.dontbreakthechain;
 
+import android.graphics.drawable.ColorDrawable;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -34,8 +35,14 @@ public class TaskListActivity extends ActionBarActivity {
                     .commit();
         }*/
 
+        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.primary)));
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        getSupportActionBar().setDisplayShowTitleEnabled(true);
+
 
         db = new DBOpenHelper(this);
+        //int id = db.addTask(new Task("Faire du sport"));
+        //db.addChain(new Chain(id, "06/09/2014", "07/04/2015"));
         //db.addChain(new Chain(253, "12/03/2015", "30/03/2015"));
         //db.addChain(new Chain(253, "02/04/2015", "05/04/2015"));
 

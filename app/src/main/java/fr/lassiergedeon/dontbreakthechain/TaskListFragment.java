@@ -16,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -80,15 +81,9 @@ public class TaskListFragment extends Fragment {
                     int direction = directionList[i];
                     final int position = positionList[i];
                     final Task task = (Task) tasksAdapter.getItem(position);
-                    String dir = "";
 
                     switch (direction) {
                         case SwipeDirections.DIRECTION_FAR_LEFT:
-                            dir = "far left";
-                            break;
-                        case SwipeDirections.DIRECTION_FAR_RIGHT:
-                            dir = "far right";
-                            break;
                         case SwipeDirections.DIRECTION_NORMAL_LEFT:
                             // On supprime la tâche
                             adapter.remove(task);
@@ -111,24 +106,22 @@ public class TaskListFragment extends Fragment {
                                 }
                             });
                             deleteBuilder.create().show();
-                            dir = "left";
                             break;
+                        case SwipeDirections.DIRECTION_FAR_RIGHT:
                         case SwipeDirections.DIRECTION_NORMAL_RIGHT:
                             task.markDayComplete(db);
-                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                            builder.setTitle("Test Dialog").setMessage("You swiped right").create().show();
-                            dir = "right";
+                            adapter.remove(task);
+                            Task new_task = db.getTask(task.getId());
+                            adapter.insert(task, position);
                             break;
                     }
-                    Toast.makeText(getActivity(),
-                            dir + " swipe position " + task,
-                            Toast.LENGTH_SHORT).show();
                     tasksAdapter.notifyDataSetChanged();
                 }
             }
         });
 
         addButton = (ButtonFloat) view.findViewById(R.id.addButtonFloat);
+        addButton.setBackgroundColor(getActivity().getResources().getColor(R.color.accent));
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -136,6 +129,8 @@ public class TaskListFragment extends Fragment {
                 builder.setTitle(R.string.taskName);
 
                 final EditText input = new EditText(getActivity());
+                input.setHint("Ma tâche");
+                input.setPadding(30, 30, 30, 30);
                 builder.setView(input);
 
                 builder.setPositiveButton(R.string.taskAdd, new DialogInterface.OnClickListener() {
@@ -191,6 +186,7 @@ public class TaskListFragment extends Fragment {
                     SharedPreferences.Editor editor = settings.edit();
                     editor.putBoolean("notification_enabled", false);
                     editor.commit();
+                    Toast.makeText(getActivity(), R.string.notificationDisabledText, Toast.LENGTH_SHORT).show();
                     Log.i("disablenotification", taskId + "");
                 }
                 return true;
@@ -215,6 +211,7 @@ public class TaskListFragment extends Fragment {
                         c.add(Calendar.DATE, 1);
                     }
                     alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, c.getTimeInMillis(), 24 * 60 * 60 * 1000, alarmIntent);
+                    Toast.makeText(getActivity(), R.string.notificationEnabledText, Toast.LENGTH_SHORT).show();
                 }
                 return true;
             default:

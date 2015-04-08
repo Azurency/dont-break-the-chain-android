@@ -29,4 +29,6 @@
     <string name="selectTone">Sélectionner une mélodie</string>
     <string name="notificationText">N\'oubliez pas, don\'t break the chain !</string>
     <string name="hourSelect">Sélectionner l\'heure</string>
+    <string name="notificationDisabledText">Notifications désactivées</string>
+    <string name="notificationEnabledText">Notifications activées</string>
 </resources>
